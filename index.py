@@ -17,7 +17,7 @@ def feature_scaling (col, max_val):
     '''
     col_max = col.max()
     col_min = col.min()
-    col = (col - col_min)/(col_max-col_min)*max_val
+    col = (col - col_min) / (col_max - col_min) * max_val
     return col
 
 
@@ -54,7 +54,11 @@ def find_movie_title(data_set, title):
                           or 0 if title not found.
 
     '''
-    title = title.title()
+    title = title.lower()
+    data_set['title'] = data_set['title'].str.lower()
+
+    
+    
     data_set = data_set.loc[data_set['title'].str.find(title) != -1 ]
     movie_options = list(data_set.iloc[:, 0])
     if not movie_options:
@@ -65,7 +69,7 @@ def find_movie_title(data_set, title):
     elif len(movie_options)>1:
         print("Looks like we have multiple options! \nChoose:")
         for option in movie_options:
-            print('\t{i} for \'{option}\''.format(option=option, i=movie_options.index(option)+1))
+           print('\t{i} for \'{option}\''.format(option=option, i=movie_options.index(option)+1))
         user_choice = -1
         print('Pick a number: ')
         while (user_choice < 1 or user_choice > len(movie_options)) :
@@ -106,7 +110,7 @@ def create_query(data_set, kwargs):
     return basic_query
 
 
-def make_recommendation(title, recommended):
+def print_recommendation(title, recommended):
     '''Presents recommended movies to the user.
     
     Parameters
@@ -122,10 +126,10 @@ def make_recommendation(title, recommended):
     if title=='':
         rec_based_on = 'for given preferences'
     else:
-        rec_based_on = 'based on the movie {movie}'.format(movie=title)
+        rec_based_on = 'based on the movie {movie}'.format(movie=title.title())
     print("\nRecommendations ({based}):".format(based=rec_based_on))
     for movie in recommended.values:
-        print('\t - {movie}'.format(movie=movie))
+        print('\t - {movie}'.format(movie=movie.title()))
     print('')
 
 
@@ -173,7 +177,7 @@ def find_n_recommendations(data_set, n, chosen_title = '', **kwargs):
     recommendations = data_set.nsmallest(n, 'distance')
     recommended_titles = recommendations.loc[:,'title']
     
-    make_recommendation(movie_title, recommended_titles)
+    print_recommendation(movie_title, recommended_titles)
     
     return recommended_titles
 
@@ -198,11 +202,11 @@ for col in to_scale:
     df[col[0]] = feature_scaling(df[col[0]],col[1])
     
     
-#  calling function 
-find_n_recommendations(df, 5)
-find_n_recommendations(df, 5,  Documentary = 1)
-find_n_recommendations(df, 5, 'Pocahontas')
+
+#find_n_recommendations(df, 5)
+#find_n_recommendations(df, 5,  Documentary = 1)
+#find_n_recommendations(df, 5, 'Pocahontas')
+
 find_n_recommendations(df, 5, 'Toy Story')
 find_n_recommendations(df, 5, 'Batman Begins')
-find_n_recommendations(df, 5, 'Star Wars')
-
+find_n_recommendations(df, 5, 'Star Wars: Episode III')
