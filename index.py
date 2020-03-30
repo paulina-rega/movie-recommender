@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 
 
+
 def normalize_column (col):
     col_max = col.max()
     col_min = col.min()
@@ -10,41 +11,35 @@ def normalize_column (col):
 
 
 def calc_distance(a ,b):
+    b = b.iloc[0,:]
     distance = np.sqrt(sum((a-b)**2))
     return distance
+
 
 def create_query(data_set, **kwargs):
     return 0
 
+
 def find_n_recommendations(chosen_title, data_set, n):
-    #zrobic capitalize title na df
+    #TODO capitalize df 'title'
     query = data_set[data_set['title']==chosen_title]
     
     if query.empty:
         print("ups :( nie mamy tego filmu w bazie")
         return 0
+    
+    column_names = data_set.columns.values
+    query = query.iloc[:,1:]
     data_set = data_set[data_set['title']!=chosen_title]
-    
-    titles_and_distances = pd.DataFrame(columns=['title', 'distance'])
-    
-    no_of_rows = data_set.shape[0]
 
-    for i in range(no_of_rows):
-        distance = calc_distance(query.iloc[0][1:], data_set.iloc[i][1:])
-        title = data_set.iloc[i]['title'] 
-        distance_entry = pd.DataFrame([[title, distance]], 
-                                      columns=['title', 'distance'])
-        titles_and_distances = titles_and_distances.append(distance_entry)
+    distances = []
+    for index, row in data_set.iterrows():
+        distances.append(calc_distance(row[column_names[1:]], query))
         
-    ## TODO : wybierz kilka najbliższych :) sortowanie nie działa 
-    titles_and_distances = titles_and_distances.sort_values(by=['distance'])
-    return titles_and_distances
-
+    data_set.loc[:, 'distance'] = distances
     
-    
-
-
-
+    data_set = data_set.sort_values(by=['distance'])
+    return data_set
 
 
 # reading data
@@ -61,14 +56,8 @@ to_normalize = ['ratingCount', 'imdbRating', 'duration', 'year', 'nrOfWins',
                 'nrOfNominations', 'nrOfNewsArticles', 'nrOfUserReviews']
 for col_name in to_normalize:
     df[col_name] = normalize_column(df[col_name])
-    
 
-    
-dist = calc_distance(df.iloc[0][1:], df.iloc[1][1:])
-dist2 = calc_distance(df.iloc[0][1:], df.iloc[0][1:])
+titles_and_dist = find_n_recommendations('Pocahontas (1995)', df, 3)
 
-#titles_and_dist = find_n_recommendations('Pocahontas (1995)', df, 3)
-
-
-titles_and_dist = find_n_recommendations('Ice Age 2 - Jetzt taut\'s (2006)', df, 3)
+#titles_and_dist = find_n_recommendations('Ice Age 2 - Jetzt taut\'s (2006)', df, 3)
 
